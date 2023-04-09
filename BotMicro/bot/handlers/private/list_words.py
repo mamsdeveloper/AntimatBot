@@ -1,0 +1,35 @@
+from aiogram import Router, F
+from aiogram.fsm.context import FSMContext
+from aiogram.types import Message
+from odetam.exceptions import ItemNotFound
+
+from bot import messages
+from bot.utils.chat_queries import get_chat_groups_and_dictionaries
+from models import Dictionary
+
+
+router = Router()
+
+
+@router.message(F.text.in_(['Добавленные слова', 'Все слова']))
+async def list_words_handler(message: Message, state: FSMContext):
+    await state.clear()
+
+    try:
+        default_dict: Dictionary = await Dictionary.get('default')
+    except ItemNotFound:
+        return
+    
+    groups_and_dicts = await get_chat_groups_and_dictionaries(message.chat.id)
+    for group, dictionary in groups_and_dicts:
+        if message.text == 'Добавленные слова':
+            full_words = set(dictionary.full_words) - set(default_dict.full_words) 
+            partial_words = set(dictionary.partial_words) - set(default_dict.partial_words) 
+        else:
+            full_words = set(dictionary.full_words)
+            partial_words = set(dictionary.partial_words)
+
+        text = messages.build_words_list(group.title, full_words, partial_words)
+        text_parts = [text[i:i+4096] for i in range(0, len(text), 4096)]
+        for part in text_parts:
+            await message.answer(part)

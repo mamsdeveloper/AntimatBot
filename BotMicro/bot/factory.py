@@ -7,7 +7,7 @@ from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 from aiogram_deta.storage import DefaultKeyBuilder, DetaStorage
 from deta import Deta
 
-from bot.handlers import router as root_router
+from bot.handlers import root_router as root_router
 from bot.middlewares.callback_message import CallbackMessageMiddleware
 from bot.middlewares.logging import LoggingMiddleware
 
