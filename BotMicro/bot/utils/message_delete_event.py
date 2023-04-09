@@ -1,10 +1,11 @@
 from datetime import datetime
 
 from aiogram import Bot
-from aiogram.types import Message
+from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
 from odetam.exceptions import ItemNotFound
 
 from bot import messages
+from bot.callbacks.event_message import BanMemberCallback, UnbanMemberCallback
 from models import StrikeMemberEvent, Chat, DeleteMessageEvent, Group, History, Member
 
 
@@ -31,13 +32,13 @@ async def message_delete_event(message: Message, reason: str):
     member_striked = await update_member_strike(message.from_user.id, group)
     if member_striked:
         try:
-            await bot.kick_chat_member(group.key, message.from_user.id)            
+            await bot.ban_chat_member(group.key, message.from_user.id)
             strike_member_event = StrikeMemberEvent(
                 username=message.from_user.username,
                 full_name=message.from_user.full_name,
                 message_text=None,
                 reason=None,
-                time=datetime.now()    
+                time=datetime.now()
             )
         except:
             strike_member_event = None
@@ -66,23 +67,54 @@ async def message_delete_event(message: Message, reason: str):
     admins: list[Chat] = await Chat.query(Chat.groups.contains(group.key))
     for admin in admins:
         await bot.send_message(
-            admin.key,
-            messages.DELETE_MESSAGE_EVENT.format(
+            chat_id=admin.key,
+            text=messages.DELETE_MESSAGE_EVENT.format(
                 title=group.title,
                 reason=del_msg_event.reason,
                 username=del_msg_event.username,
                 full_name=del_msg_event.full_name,
                 text=del_msg_event.message_text
-            )[:4000] + '...'
+            )[:4000] + '...',
+            reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Забанить',
+                        callback_data=BanMemberCallback(
+                            chat_id=message.chat.id, 
+                            user_id=message.from_user.id
+                        ).pack()
+                    )
+                ],
+                [
+                    InlineKeyboardButton(
+                        text='Сбросить счетчик банов',
+                        callback_data=UnbanMemberCallback(
+                            chat_id=message.chat.id, 
+                            user_id=message.from_user.id
+                        ).pack()
+                    )
+                ]
+            ])
         )
         if strike_member_event:
             await bot.send_message(
-                admin.key,
-                messages.STRIKE_MEMBER_EVENT.format(
+                chat_id=admin.key,
+                text=messages.STRIKE_MEMBER_EVENT.format(
                     title=group.title,
                     username=strike_member_event.username,
                     full_name=strike_member_event.full_name
-                )
+                ),
+                reply_markup=InlineKeyboardMarkup(inline_keyboard=[
+                    [
+                        InlineKeyboardButton(
+                            text='Разбанить',
+                            callback_data=UnbanMemberCallback(
+                                chat_id=message.chat.id, 
+                                user_id=message.from_user.id
+                            ).pack()
+                        )
+                    ]
+                ])
             )
 
 
@@ -98,5 +130,5 @@ async def update_member_strike(user_id: int, group: Group) -> bool:
 
     if member.strikes_count[group.key] >= 3:
         return group.strike_mode
-    
+
     return False
