@@ -62,7 +62,10 @@ async def group_message_handler(message: Message, group: Group) -> None:
     partial_search_result = check_partial_words(message.text, dictionary.partial_words)
     if partial_search_result:
         word, part = partial_search_result
-        await message_delete_event(message, f'часть "{part}" в слове "{word}"')
+        if part:
+            await message_delete_event(message, f'часть "{part}" в слове "{word}"')
+        else:
+            await message_delete_event(message, f'слово "{part}"')
         return
     
     text = get_normalized_text(message.text)
@@ -75,5 +78,8 @@ async def group_message_handler(message: Message, group: Group) -> None:
     partial_search_result = check_partial_words(text, dictionary.partial_words)
     if partial_search_result:
         word, part = partial_search_result
-        await message_delete_event(message, f'часть "{part}" в слове "{word}"')
+        if part:
+            await message_delete_event(message, f'часть "{part}" в слове "{word}"')
+        else:
+            await message_delete_event(message, f'слово "{part}"')
         return

@@ -19,7 +19,7 @@ DELETE_MESSAGE_EVENT = '''
 <b>Пользователь:</b> {full_name}, https://t.me/{username}
 <b>Причина:</b> {reason}
 <b>Текст сообщение:</b> 
-{text}
+<code>{text}</code>
 
 <b>Шаблон при ошибке:</b>
 <code>
