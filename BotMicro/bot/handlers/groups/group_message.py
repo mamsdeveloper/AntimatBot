@@ -1,12 +1,9 @@
-from typing import Any, Callable, Awaitable, Optional
-
 from aiogram import F, Router
 from aiogram.types import Message
 from odetam.exceptions import ItemNotFound
 
 from analysis.checking import check_full_words, check_partial_words
 from analysis.normilize import get_normalized_text
-from bot.utils.group_utils import is_user_admin
 
 from bot.utils.message_delete_event import message_delete_event
 from models import Dictionary, Group
@@ -15,35 +12,7 @@ from models import Dictionary, Group
 router = Router()
 
 
-@router.message.middleware()
-async def active_group_middleware(
-    handler: Callable[[Message, dict[str, Any]], Awaitable[Any]],
-    event: Message,
-    data: dict[str, Any]
-) -> Optional[Message]:
-    if not event.from_user:
-        return
-
-    is_admin = await is_user_admin(event.from_user, event.chat)
-    if is_admin:
-        return
-        
-    chat_id = event.chat.id
-    try:
-        group: Group = await Group.get(str(chat_id))
-    except ItemNotFound:
-        return
-    
-    if not group.active:
-        return
-    
-    if event.from_user.full_name in group.ignored_users:
-        return
-    
-    data['group'] = group
-    return await handler(event, data)
-
-
+@router.edited_message(F.text, F.from_user.is_bot == False)
 @router.message(F.text, F.from_user.is_bot == False)
 async def group_message_handler(message: Message, group: Group) -> None:
     if not message.text:
