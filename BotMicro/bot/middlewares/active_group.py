@@ -24,6 +24,9 @@ class ActiveGroupMiddleware(BaseMiddleware):
             if not event.from_user:
                 return
 
+            if event.from_user.full_name == 'Telegram':
+                return
+            
             is_admin = await is_user_admin(event.from_user, event.chat)
             if is_admin:
                 return
