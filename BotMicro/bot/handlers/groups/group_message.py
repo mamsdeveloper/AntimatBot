@@ -18,17 +18,22 @@ async def group_message_handler(message: Message, group: Group) -> None:
     if not message.text:
         return
     
+    text_without_excludes = message.text
+    text_without_excludes = text_without_excludes.replace('https://t.me/Yasnosvet_talks', '')
+    text_without_excludes = text_without_excludes.replace('https://t.me/Yasnosvet_thanks', '')
+    text_without_excludes = text_without_excludes.replace('https://t.me/Yasnosvet_ask', '')
+
     try:
         dictionary: Dictionary = await Dictionary.get(group.key)
     except ItemNotFound:
         return
 
-    full_check_result = check_full_words(message.text, dictionary.full_words)
+    full_check_result = check_full_words(text_without_excludes, dictionary.full_words)
     if full_check_result:
         await message_delete_event(message, f'слово "{full_check_result}"')
         return
 
-    partial_search_result = check_partial_words(message.text, dictionary.partial_words)
+    partial_search_result = check_partial_words(text_without_excludes, dictionary.partial_words)
     if partial_search_result:
         word, part = partial_search_result
         if part:
@@ -37,14 +42,14 @@ async def group_message_handler(message: Message, group: Group) -> None:
             await message_delete_event(message, f'слово "{part}"')
         return
     
-    text = get_normalized_text(message.text)
+    normalized_text = get_normalized_text(text_without_excludes)
 
-    full_check_result = check_full_words(text, dictionary.full_words)
+    full_check_result = check_full_words(normalized_text, dictionary.full_words)
     if full_check_result:
         await message_delete_event(message, f'слово "{full_check_result}"')
         return
 
-    partial_search_result = check_partial_words(text, dictionary.partial_words)
+    partial_search_result = check_partial_words(normalized_text, dictionary.partial_words)
     if partial_search_result:
         word, part = partial_search_result
         if part:

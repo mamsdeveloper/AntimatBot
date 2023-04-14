@@ -9,9 +9,6 @@ def get_normalized_text(text: str) -> str:
     text = re.sub(r'[^\w ]', ' ', text)
     text = re.sub(r' {2, }', ' ', text)
     text = text.replace('ё', 'е')
-    text = text.replace('https://t.me/Yasnosvet_talks', '')
-    text = text.replace('https://t.me/Yasnosvet_thanks', '')
-    text = text.replace('https://t.me/Yasnosvet_ask', '')
     return text
 
 
