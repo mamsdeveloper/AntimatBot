@@ -30,7 +30,7 @@ class ActiveGroupMiddleware(BaseMiddleware):
             is_admin = await is_user_admin(event.from_user, event.chat)
             if is_admin:
                 return
-                
+        
             chat_id = event.chat.id
             try:
                 group: Group = await Group.get(str(chat_id))
