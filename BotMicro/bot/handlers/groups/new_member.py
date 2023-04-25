@@ -39,7 +39,10 @@ async def new_member_handler(event: ChatMemberUpdated, bot: Bot):
         for admin in admins:
             await bot.send_message(
                 chat_id=admin.key,
-                text=messages.WEIRD_NAME_RESTRICTED.format(full_name=event.new_chat_member.user.full_name),
+                text=messages.WEIRD_NAME_RESTRICTED.format(
+                    full_name=event.new_chat_member.user.full_name,
+                    username=event.new_chat_member.user.username
+                ),
                 reply_markup=InlineKeyboardMarkup(
                     inline_keyboard=[
                         [
