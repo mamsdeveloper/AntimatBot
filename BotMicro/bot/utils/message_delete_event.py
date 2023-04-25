@@ -1,15 +1,16 @@
 from datetime import datetime
 
 from aiogram import Bot
-from aiogram.types import Message, InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from odetam.exceptions import ItemNotFound
 
 from bot import messages
 from bot.callbacks.event_message import BanMemberCallback, UnbanMemberCallback
-from models import StrikeMemberEvent, Chat, DeleteMessageEvent, Group, History, Member
+from models import (Chat, DeleteMessageEvent, Group, History, Member,
+                    StrikeMemberEvent)
 
 
-async def message_delete_event(message: Message, reason: str):
+async def message_delete_event(member: Member, message: Message, reason: str):
     # delete message and specify reason to Recent Actions
     try:
         await message.delete()
@@ -29,7 +30,7 @@ async def message_delete_event(message: Message, reason: str):
     except ItemNotFound:
         return
 
-    member_striked = await update_member_strike(message.from_user.id, group)
+    member_striked = await update_member_strike(member, group)
     if member_striked:
         try:
             await bot.ban_chat_member(group.key, message.from_user.id)
@@ -80,7 +81,7 @@ async def message_delete_event(message: Message, reason: str):
                     InlineKeyboardButton(
                         text='Забанить',
                         callback_data=BanMemberCallback(
-                            chat_id=message.chat.id, 
+                            chat_id=message.chat.id,
                             user_id=message.from_user.id
                         ).pack()
                     )
@@ -89,7 +90,7 @@ async def message_delete_event(message: Message, reason: str):
                     InlineKeyboardButton(
                         text='Сбросить счетчик банов',
                         callback_data=UnbanMemberCallback(
-                            chat_id=message.chat.id, 
+                            chat_id=message.chat.id,
                             user_id=message.from_user.id
                         ).pack()
                     )
@@ -109,7 +110,7 @@ async def message_delete_event(message: Message, reason: str):
                         InlineKeyboardButton(
                             text='Разбанить',
                             callback_data=UnbanMemberCallback(
-                                chat_id=message.chat.id, 
+                                chat_id=message.chat.id,
                                 user_id=message.from_user.id
                             ).pack()
                         )
@@ -118,12 +119,7 @@ async def message_delete_event(message: Message, reason: str):
             )
 
 
-async def update_member_strike(user_id: int, group: Group) -> bool:
-    try:
-        member: Member = await Member.get(str(user_id))
-    except ItemNotFound:
-        member = Member(key=str(user_id), strikes_count={group.key: 0})
-
+async def update_member_strike(member: Member, group: Group) -> bool:
     member.strikes_count.setdefault(group.key, 0)
     member.strikes_count[group.key] += 1
     await member.save()
