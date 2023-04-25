@@ -31,7 +31,7 @@ async def new_member_handler(event: ChatMemberUpdated, bot: Bot):
     if (
         'bot' in fullname
         or len(re.sub(r'[^a-zа-я]', '', fullname)) <= 2
-        or re.search(r'[\u0600-\u06FF\u0590-\u05FF]+', fullname)
+        or re.search(r'[\u0600-\u06FF\u0530-\u058F\u4E00-\u9FFF]+', fullname)
     ):
         await bot.ban_chat_member(event.chat.id, event.new_chat_member.user.id)
 
