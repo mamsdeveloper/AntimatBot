@@ -1,3 +1,4 @@
+from os import getenv
 from aiogram import F, Router
 from aiogram.types import Message
 from odetam.exceptions import ItemNotFound
@@ -26,7 +27,7 @@ async def group_message_handler(message: Message, group: Group) -> None:
     member.messages_count[group.key] += 1
     await member.save()
 
-    if member.messages_count.get(group.key, 0) >= 5:
+    if member.messages_count.get(group.key, 0) >= int(getenv('MESSAGES_THRESHOLD', 5)):
         return
 
     text_without_excludes = message.text

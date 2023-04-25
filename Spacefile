@@ -19,3 +19,6 @@ micros:
         - name: ENABLE_EVENTS_LOGS
           description: Enable logging of each telegram event. Logs are stored in the "logs" Deta Base.
           default: "True"
+        - name: MESSAGES_THRESHOLD
+          description: Number of messages to be sent after member will not be banned.
+          default: "5"
