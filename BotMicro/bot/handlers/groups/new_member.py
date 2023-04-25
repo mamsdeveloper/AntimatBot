@@ -41,7 +41,8 @@ async def new_member_handler(event: ChatMemberUpdated, bot: Bot):
                 chat_id=admin.key,
                 text=messages.WEIRD_NAME_RESTRICTED.format(
                     full_name=event.new_chat_member.user.full_name,
-                    username=event.new_chat_member.user.username
+                    username=event.new_chat_member.user.username,
+                    title=event.chat.title
                 ),
                 reply_markup=InlineKeyboardMarkup(
                     inline_keyboard=[
