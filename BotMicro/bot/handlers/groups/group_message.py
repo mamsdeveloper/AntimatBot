@@ -34,6 +34,7 @@ async def group_message_handler(message: Message, group: Group) -> None:
     text_without_excludes = text_without_excludes.replace('https://t.me/Yasnosvet_talks', '')
     text_without_excludes = text_without_excludes.replace('https://t.me/Yasnosvet_thanks', '')
     text_without_excludes = text_without_excludes.replace('https://t.me/Yasnosvet_ask', '')
+    text_without_excludes = text_without_excludes.replace('https://taplink.cc/pavelangel369', '')
 
     try:
         dictionary: Dictionary = await Dictionary.get(group.key)
