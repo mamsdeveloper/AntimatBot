@@ -11,6 +11,9 @@ SUCCESSFUL_UPDATE_WORDS = 'Слова успешно обновлены'
 SUCCESSFUL_DROP_WORDS = 'Словарь успешно очищен'
 SUCCESSFUL_REPAIR_WORDS = 'Словарь в исходном состоянии'
 
+SUCCESSFUL_ACTIVATE_FILTER = 'Фильтр матов успешно активирован'
+SUCCESSFUL_DEACTIVATE_FILTER = 'Фильтр матов успешно отключен'
+
 DELETE_MESSAGE_REASON = 'Причина: {reason}'
 
 DELETE_MESSAGE_EVENT = '''
