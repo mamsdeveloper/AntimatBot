@@ -84,7 +84,7 @@ def build_groups_list(groups_and_dicts: list[tuple[Group, Dictionary]]) -> str:
         text += '\n  <b>Бан за стоп-слова</b>: ' + ('активирован' if group.strike_mode else 'выключен')
         text += '\n  <b>Кол-во сообщений для бана</b>: ' + str(group.strike_limit)
         text += '\n  <b>Размер словаря</b>: ' + str(len(dictionary.full_words) + len(dictionary.partial_words))
-        text += '\n  <b>Фильтр матов</b>: ' + ('активирован' if dictionary.profanity_trie else 'выключен')
+        text += '\n  <b>Фильтр матов</b>: ' + ('активирован' if dictionary.profanity_filter else 'выключен')
         text += '\n'
 
     return text
