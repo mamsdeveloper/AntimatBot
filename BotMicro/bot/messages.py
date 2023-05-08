@@ -18,12 +18,12 @@ DELETE_MESSAGE_EVENT = '''
 <b>Группа:</b> {title}
 <b>Пользователь:</b> {full_name}, https://t.me/{username}
 <b>Причина:</b> {reason}
-<b>Текст сообщение:</b> 
+<b>Текст сообщение:</b>
 <code>{text}</code>
 
 <b>Шаблон при ошибке:</b>
 <code>
-Здравствуйте, уважаемая(ый) {full_name}! 
+Здравствуйте, уважаемая(ый) {full_name}!
 Бот удалил Ваше сообщение за {reason}, переформулируйте, пожалуйста и опубликуйте вновь.
 </code>
 '''
@@ -46,7 +46,7 @@ WEIRD_NAME_RESTRICTED = '''
 <b>Шаблон при ошибке:</b>
 <code>
 
-Здравствуйте, уважаемая(ый) {full_name}! 
+Здравствуйте, уважаемая(ый) {full_name}!
 Бот не разрешил Вам вход в чат за некорректный ник (содержит менее двух букв / содержит арабские буквы / содержит bot). Попробуйте войти в чат снова.
 </code>
 '''
@@ -81,6 +81,7 @@ def build_groups_list(groups_and_dicts: list[tuple[Group, Dictionary]]) -> str:
         text += '\n  <b>Бан за стоп-слова</b>: ' + ('активирован' if group.strike_mode else 'выключен')
         text += '\n  <b>Кол-во сообщений для бана</b>: ' + str(group.strike_limit)
         text += '\n  <b>Размер словаря</b>: ' + str(len(dictionary.full_words) + len(dictionary.partial_words))
+        text += '\n  <b>Фильтр матов</b>: ' + ('активирован' if dictionary.profanity_trie else 'выключен')
         text += '\n'
 
     return text
