@@ -225,3 +225,4 @@ $RECYCLE.BIN/
 
 typings/
 poetry.lock
+develop/

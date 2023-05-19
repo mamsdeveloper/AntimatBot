@@ -1,7 +1,11 @@
+import pickle
 import re
 from typing import Optional
 
-from analysis.normilize import get_normalized_text
+from deta import Drive
+
+from analysis.normilize import get_normalized_text, get_obfuscated_words
+from vartrie import VarTrie
 
 
 def check_regex_inject(text: str) -> bool:
@@ -15,7 +19,8 @@ def check_full_words(text: str, full_words: list[str]) -> Optional[str]:
 
         # ((?<=[\s,.:;{quotas}])|\A) and (?=[\s,.:;{quotas}]|$) is replacement for \b for utf (\b works only for askii)
         quotas = '\\"' + "\\'"
-        result = re.search(rf'((?<=[\s,.:;{quotas}])|\A){word}(?=[\s,.:;{quotas}]|$)', text)
+        result = re.search(
+            rf'((?<=[\s,.:;{quotas}])|\A){word}(?=[\s,.:;{quotas}]|$)', text)
         if result:
             return result.group()
 
@@ -30,6 +35,20 @@ def check_partial_words(text: str, partial_words: list[str]) -> Optional[tuple[s
                 return outer.group(), word
             else:
                 return '', word
+
+
+def check_profanity(text: str) -> Optional[str]:
+    drive = Drive('profanity')
+    profanity_trie_pkl = drive.get('trie.pkl')
+    profanity_trie: VarTrie = pickle.loads(profanity_trie_pkl.read())
+
+    text = get_normalized_text(text)
+    words = get_obfuscated_words(text)
+    for word in words:
+        if profanity_trie.search(word):
+            return word
+
+    return None
 
 
 def check_text(text: str, full_words: list[str], partial_words: list[str]) -> Optional[str]:

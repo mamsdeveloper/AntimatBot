@@ -6,7 +6,6 @@ analyzer = None
 
 def get_normalized_text(text: str) -> str:
     text = text.lower()
-    text = re.sub(r'[^\w ]', ' ', text)
     text = re.sub(r' {2, }', ' ', text)
     text = text.replace('ё', 'е')
     return text
@@ -14,6 +13,11 @@ def get_normalized_text(text: str) -> str:
 
 def get_words(text: str) -> set[str]:
     words = re.findall(r'\w+', text)
+    return set(words)
+
+
+def get_obfuscated_words(text: str) -> set[str]:
+    words = re.findall(r"\w[-\w'`&%$#@*]+\w", text)
     return set(words)
 
 

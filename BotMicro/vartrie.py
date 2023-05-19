@@ -24,11 +24,17 @@ Inspirations:
 """
 
 
+from collections import defaultdict
+from email.policy import default
 from typing import DefaultDict, Optional
 
 
-class Node(DefaultDict[frozenset[str], 'Node']):
-    """Node of VarTrie."""
+class Node:
+    """Node of VarTrie.
+
+    Consists of a dictionary of children nodes and a boolean value
+    indicating whether this node is the end of a word.
+    """
 
     def __init__(self, is_end: bool = False):
         """Initialize Node.
@@ -39,7 +45,7 @@ class Node(DefaultDict[frozenset[str], 'Node']):
         """
         super().__init__()
         self.is_end = is_end
-        self.default_factory = Node
+        self.children: DefaultDict[frozenset[str], Node] = defaultdict(Node)
 
     def __repr__(self) -> str:
         """Return Node string representation as dict.
@@ -47,7 +53,7 @@ class Node(DefaultDict[frozenset[str], 'Node']):
         Returns:
             str: Node dictionary representation.
         """
-        return str(dict(self))
+        return str(self.children)
 
 
 class VarTrie:
@@ -107,7 +113,7 @@ class VarTrie:
             char = word[0]
             word = word[1:]
             forms = self._get_char_forms(char)
-            node = node[forms]
+            node = node.children[forms]
 
         node.is_end = True
 
@@ -193,7 +199,7 @@ class VarTrie:
                 List of descendants of node that match word.
         """
         nodes = []
-        for forms, forms_node in node.items():
+        for forms, forms_node in node.children.items():
             sorted_forms = sorted(forms, key=len, reverse=True)
             for form in sorted_forms:
                 if word.startswith(form):
