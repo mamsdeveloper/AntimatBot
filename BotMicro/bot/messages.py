@@ -11,6 +11,18 @@ SUCCESSFUL_UPDATE_WORDS = 'Слова успешно обновлены'
 SUCCESSFUL_DROP_WORDS = 'Словарь успешно очищен'
 SUCCESSFUL_REPAIR_WORDS = 'Словарь в исходном состоянии'
 
+SUCCESSFUL_ACTIVATE_FILTER = 'Фильтр матов успешно активирован'
+SUCCESSFUL_DEACTIVATE_FILTER = 'Фильтр матов успешно отключен'
+TEST_FILTER = '''
+Тест фильтра матов
+
+<b>Текст сообщения:</b>
+<code>{text}</code>
+
+<b>Слово:</b> {word}
+<b>Время обработки:</b> {process_time}
+'''
+
 DELETE_MESSAGE_REASON = 'Причина: {reason}'
 
 DELETE_MESSAGE_EVENT = '''
@@ -18,12 +30,12 @@ DELETE_MESSAGE_EVENT = '''
 <b>Группа:</b> {title}
 <b>Пользователь:</b> {full_name}, https://t.me/{username}
 <b>Причина:</b> {reason}
-<b>Текст сообщение:</b> 
+<b>Текст сообщения:</b>
 <code>{text}</code>
 
 <b>Шаблон при ошибке:</b>
 <code>
-Здравствуйте, уважаемая(ый) {full_name}! 
+Здравствуйте, уважаемая(ый) {full_name}!
 Бот удалил Ваше сообщение за {reason}, переформулируйте, пожалуйста и опубликуйте вновь.
 </code>
 '''
@@ -45,8 +57,9 @@ WEIRD_NAME_RESTRICTED = '''
 
 <b>Шаблон при ошибке:</b>
 <code>
-Здравствуйте, уважаемая(ый) {full_name}! 
-Бот удалил Ваше сообщение за некорректный ник (содержит менее двух букв / содержит арабские буквы / содержит bot), попробуйте войти в чат снова.
+
+Здравствуйте, уважаемая(ый) {full_name}!
+Бот не разрешил Вам вход в чат за некорректный ник (содержит менее двух букв / содержит арабские буквы / содержит bot). Попробуйте войти в чат снова.
 </code>
 '''
 
@@ -55,6 +68,7 @@ STRIKES_DISABLED = 'Баны за стоп-слова отключены'
 ASK_STRIKE_LIMIT = 'Укажите число сообщений со стоп-словами, после которого пользователь должен быть забанен:'
 STRIKE_LIMIT_NOT_DIGIT = 'Необходимо ввести число'
 STRIKE_LIMIT_UPDATED = 'Лимит бана установлен'
+
 
 def build_words_list(group_title: str, full_words: Iterable[str], partial_words: Iterable[str]) -> str:
     return f'''
@@ -77,9 +91,14 @@ def build_groups_list(groups_and_dicts: list[tuple[Group, Dictionary]]) -> str:
     text = 'Ваши группы:\n'
     for group, dictionary in groups_and_dicts:
         text += '\n- <b>Группа</b>: ' + group.title
-        text += '\n  <b>Бан за стоп-слова</b>: ' + ('активирован' if group.strike_mode else 'выключен')
-        text += '\n  <b>Кол-во сообщений для бана</b>: ' + str(group.strike_limit)
-        text += '\n  <b>Размер словаря</b>: ' + str(len(dictionary.full_words) + len(dictionary.partial_words))
+        text += '\n  <b>Бан за стоп-слова</b>: ' + \
+            ('активирован' if group.strike_mode else 'выключен')
+        text += '\n  <b>Кол-во сообщений для бана</b>: ' + \
+            str(group.strike_limit)
+        text += '\n  <b>Размер словаря</b>: ' + \
+            str(len(dictionary.full_words) + len(dictionary.partial_words))
+        text += '\n  <b>Фильтр матов</b>: ' + \
+            ('активирован' if dictionary.profanity_filter else 'выключен')
         text += '\n'
 
     return text

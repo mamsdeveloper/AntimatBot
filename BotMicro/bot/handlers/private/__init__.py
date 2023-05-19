@@ -10,6 +10,7 @@ from .ignored_users import router as ignored_users_router
 from .list_words import router as list_words_router
 from .start import router as start_router
 from .strike_mode import router as strike_mode_router
+from .profanity_filter import router as profanity_filter_router
 
 router = Router()
 router.include_router(start_router)
@@ -19,6 +20,7 @@ router.include_router(list_words_router)
 router.include_router(strike_mode_router)
 router.include_router(ignored_users_router)
 router.include_router(event_message_router)
+router.include_router(profanity_filter_router)
 
 
 @router.message.middleware()

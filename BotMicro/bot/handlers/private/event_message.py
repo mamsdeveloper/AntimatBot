@@ -2,7 +2,7 @@ from aiogram import Bot, Router
 from aiogram.types import CallbackQuery, Message
 from odetam.exceptions import ItemNotFound
 
-from bot.callbacks.event_message import AllowNicknameCallback, BanMemberCallback, UnbanMemberCallback
+from bot.callbacks.event_message import AllowNicknameCallback, BanMemberCallback, DeleteMessageCallback, UnbanMemberCallback
 from models.member import Member
 
 router = Router()
@@ -42,5 +42,11 @@ async def allow_nickname_handler(query: CallbackQuery, message: Message, callbac
     member.strikes_count[str(callback_data.chat_id)] = 0
     member.nickname_pass[str(callback_data.chat_id)] = True
     await member.save()
-    
+
+    await message.edit_reply_markup(reply_markup=None)
+
+
+@router.callback_query(DeleteMessageCallback.filter())
+async def delete_message_handler(query: CallbackQuery, message: Message, callback_data: DeleteMessageCallback, bot: Bot) -> None:
+    await bot.delete_message(callback_data.chat_id, callback_data.message_id)
     await message.edit_reply_markup(reply_markup=None)
