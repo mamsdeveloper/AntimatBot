@@ -11,6 +11,7 @@ from bot.callbacks.event_message import AllowNicknameCallback
 from models.chat import Chat
 from models.group import Group
 from models.member import Member
+from utils.logging import log
 
 router = Router()
 
@@ -33,7 +34,12 @@ async def new_member_handler(event: ChatMemberUpdated, bot: Bot):
         or len(re.sub(r'[^a-zа-я]', '', fullname)) <= 2
         or re.search(r'[\u0600-\u06FF\u0530-\u058F\u4E00-\u9FFF]+', fullname)
     ):
-        await bot.ban_chat_member(event.chat.id, event.new_chat_member.user.id)
+        result = await bot.ban_chat_member(event.chat.id, event.new_chat_member.user.id)
+        log(data={
+            'chat_id': event.chat.id,
+            'user_id': event.new_chat_member.user.id,
+            'ban_chat_member_result': result
+        })
 
         admins: list[Chat] = await Chat.query(Chat.groups.contains(group.key))
         for admin in admins:
