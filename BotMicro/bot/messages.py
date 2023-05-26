@@ -20,7 +20,6 @@ TEST_FILTER = '''
 <code>{text}</code>
 
 <b>Слово:</b> {word}
-<b>Время обработки:</b> {process_time}
 '''
 
 DELETE_MESSAGE_REASON = 'Причина: {reason}'
