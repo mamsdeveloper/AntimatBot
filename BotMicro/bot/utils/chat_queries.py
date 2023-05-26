@@ -10,13 +10,13 @@ async def get_chat_groups(chat_id: int) -> list[Group]:
         chat: Chat = await Chat.get(str(chat_id))
     except ItemNotFound:
         return groups
-    
+
     for group_key in chat.groups:
         try:
             group: Group = await Group.get(group_key)
         except ItemNotFound:
             continue
-        
+
         groups.append(group)
 
     return groups
@@ -29,7 +29,7 @@ async def get_chat_groups_dictionaries(chat_id: int) -> list[Dictionary]:
         chat: Chat = await Chat.get(str(chat_id))
     except ItemNotFound:
         return dictionaries
-    
+
     for group_key in chat.groups:
         try:
             dictionary: Dictionary = await Dictionary.get(group_key)
@@ -37,7 +37,7 @@ async def get_chat_groups_dictionaries(chat_id: int) -> list[Dictionary]:
             continue
 
         dictionaries.append(dictionary)
-    
+
     return dictionaries
 
 
@@ -48,18 +48,18 @@ async def get_chat_groups_and_dictionaries(chat_id: int) -> list[tuple[Group, Di
         chat: Chat = await Chat.get(str(chat_id))
     except ItemNotFound:
         return groups_and_dicts
-    
+
     for group_key in chat.groups:
         try:
-            group: Group = await Group.get(group_key) 
+            group: Group = await Group.get(group_key)
         except ItemNotFound:
             continue
 
         try:
-            dictionary: Dictionary = await Dictionary.get(group_key) 
+            dictionary: Dictionary = await Dictionary.get(group_key)
         except ItemNotFound:
             continue
-        
+
         groups_and_dicts.append((group, dictionary))
-    
+
     return groups_and_dicts

@@ -1,5 +1,6 @@
 from typing import Iterable
-from models import Group, Dictionary
+
+from models import Dictionary, Group
 
 GREETING = 'Привет! Я помогу тебе удалять сообщения со стоп-словами.'
 
@@ -13,14 +14,11 @@ SUCCESSFUL_REPAIR_WORDS = 'Словарь в исходном состоянии
 
 SUCCESSFUL_ACTIVATE_FILTER = 'Фильтр матов успешно активирован'
 SUCCESSFUL_DEACTIVATE_FILTER = 'Фильтр матов успешно отключен'
-TEST_FILTER = '''
-Тест фильтра матов
-
-<b>Текст сообщения:</b>
-<code>{text}</code>
+PROFANITY_EVENT = '''
+Обнаружен мат.
+<b>Группа:</b> {title}
 
 <b>Слово:</b> {word}
-<b>Время обработки:</b> {process_time}
 '''
 
 DELETE_MESSAGE_REASON = 'Причина: {reason}'
