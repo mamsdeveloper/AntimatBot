@@ -30,3 +30,24 @@ async def spread_messages(
         return_exceptions=True
     )
     return results
+
+
+async def forward_messages(
+    chat_ids: list[int],
+    messages: list[Message],
+    bot: Bot
+) -> list[Union[Exception, Message]]:
+    targets = [
+        bot.forward_message(
+            chat_id,
+            message.chat.id,
+            message.message_id
+        )
+        for chat_id in chat_ids
+        for message in messages
+    ]
+    results: list[Union[Exception, Message]] = await gather(
+        *targets,
+        return_exceptions=True
+    )
+    return results

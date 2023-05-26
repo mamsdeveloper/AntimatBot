@@ -19,3 +19,7 @@ class StrikeMemberEvent(Event):
 
 class DeleteMessageEvent(Event):
     event = 'delete_message'
+
+
+class ProfanityFilterEvent(Event):
+    event = 'profanity_filter'
