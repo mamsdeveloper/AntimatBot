@@ -94,8 +94,8 @@ async def strike_member_event(
         message,
         STRIKE_MEMBER_EVENT.format(
             title=group.title,
-            username=member.username,
-            full_name=member.full_name
+            username=message.from_user.username,
+            full_name=message.from_user.full_name,
         )
     )
 
