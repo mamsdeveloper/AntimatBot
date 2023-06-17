@@ -76,7 +76,7 @@ async def message_delete_event(
     await spread_messages(admins_chats_ids, [delete_event_message], bot)
 
     # update strikes and ban member if needed
-    member_striked = update_member_strike(group, member)
+    member_striked = await update_member_strike(group, member)
     if member_striked:
         await strike_member_event(group, member, message, bot)
 
