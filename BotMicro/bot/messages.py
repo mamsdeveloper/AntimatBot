@@ -68,7 +68,7 @@ STRIKE_LIMIT_NOT_DIGIT = 'Необходимо ввести число'
 STRIKE_LIMIT_UPDATED = 'Лимит бана установлен'
 
 
-def build_words_list(group_title: str, full_words: Iterable[str], partial_words: Iterable[str]) -> str:
+def build_words_list(group_title: str, full_words: Iterable[str], partial_words: Iterable[str], patterns: Iterable[str]) -> str:
     return f'''
 <b>Группа:</b> {group_title}
 
@@ -77,6 +77,9 @@ def build_words_list(group_title: str, full_words: Iterable[str], partial_words:
 
 <b>Частичные слова:</b>
 {", ".join(partial_words)}
+
+<b>Шаблоны слов:</b>
+{", ".join(patterns)}
 
 '''
 

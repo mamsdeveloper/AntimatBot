@@ -34,6 +34,11 @@ async def start_handler(message: Message, state: FSMContext) -> None:
                 KeyboardButton(text='Убрать все частичные слова'),
             ],
             [
+                KeyboardButton(text='Добавить шаблоны слов'),
+                KeyboardButton(text='Убрать шаблоны слов'),
+                KeyboardButton(text='Убрать все шаблоны'),
+            ],
+            [
                 KeyboardButton(text='Активировать фильтр матов'),
                 KeyboardButton(text='Выключить фильтр матов'),
             ],
