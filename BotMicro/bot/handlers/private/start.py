@@ -39,6 +39,11 @@ async def start_handler(message: Message, state: FSMContext) -> None:
                 KeyboardButton(text='Убрать все шаблоны'),
             ],
             [
+                KeyboardButton(text='Добавить пропуск слов'),
+                KeyboardButton(text='Убрать пропуск слов'),
+                KeyboardButton(text='Убрать все пропуски'),
+            ],
+            [
                 KeyboardButton(text='Активировать фильтр матов'),
                 KeyboardButton(text='Выключить фильтр матов'),
             ],

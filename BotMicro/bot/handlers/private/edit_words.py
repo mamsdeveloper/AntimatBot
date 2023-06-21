@@ -11,7 +11,7 @@ from models import Dictionary
 router = Router()
 
 
-@router.message(F.text.in_(['Убрать все полные слова', 'Убрать все частичные слова', 'Убрать все шаблоны']))
+@router.message(F.text.in_(['Убрать все полные слова', 'Убрать все частичные слова', 'Убрать все шаблоны', 'Убрать все пропуски']))
 async def drop_words_handler(message: Message, state: FSMContext):
     await state.clear()
 
@@ -29,7 +29,7 @@ async def drop_words_handler(message: Message, state: FSMContext):
     await message.answer(messages.SUCCESSFUL_DROP_WORDS)
 
 
-@router.message(F.text.in_(['Восстановить словарь полных слов', 'Восстановить словарь частичных слов', '']))
+@router.message(F.text.in_(['Восстановить словарь полных слов', 'Восстановить словарь частичных слов']))
 async def repair_words_handler(message: Message, state: FSMContext):
     await state.clear()
 
@@ -53,7 +53,9 @@ async def repair_words_handler(message: Message, state: FSMContext):
     'Добавить частичные слова',
     'Убрать частичные слова',
     'Добавить шаблоны слов',
-    'Убрать шаблоны слов'
+    'Убрать шаблоны слов',
+    'Добавить пропуск слов',
+    'Убрать пропуск слов'
 ]))
 async def edit_words_handler(message: Message, state: FSMContext):
     await state.clear()
@@ -88,6 +90,10 @@ async def words_handler(message: Message, state: FSMContext):
             dictionary.regex_patterns.extend(words)
         elif action == 'Убрать шаблоны слов':
             dictionary.regex_patterns = [word for word in dictionary.regex_patterns if word not in words]
+        elif action == 'Добавить пропуск слов':
+            dictionary.stop_words.extend(words)
+        elif action == 'Убрать пропуск слов':
+            dictionary.stop_words = [word for word in dictionary.stop_words if word not in words]
 
         await dictionary.save()
 

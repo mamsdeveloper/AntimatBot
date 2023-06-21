@@ -6,7 +6,7 @@ from odetam.exceptions import ItemNotFound
 
 from analysis.checking import (check_full_words, check_partial_words,
                                check_profanity, check_regexps)
-from analysis.normilize import get_normalized_text
+from analysis.normilize import get_normalized_text, remove_stop_words
 
 from bot.messages import PROFANITY_EVENT
 from bot.utils.events import message_delete_event, profanity_filter_event
@@ -51,6 +51,8 @@ async def group_message_handler(message: Message, bot: Bot, group: Group) -> Non
         'https://taplink.cc/pavelangel369', '')
 
     dictionary: Dictionary = await Dictionary.get(group.key)
+
+    # text = remove_stop_words(text, dictionary.stop_words)
 
     full_check_result = check_full_words(text, dictionary.full_words)
     if full_check_result:
