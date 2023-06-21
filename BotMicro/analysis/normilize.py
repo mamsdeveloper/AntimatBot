@@ -4,6 +4,14 @@ import re
 analyzer = None
 
 
+def remove_stop_words(text: str, stop_words: list[str]) -> str:
+    for word in stop_words:
+        text = text.replace(word.lower(), '')
+        text = text.replace(word, '')
+
+    return text
+
+
 def get_normalized_text(text: str) -> str:
     text = text.lower()
     text = re.sub(r' {2, }', ' ', text)

@@ -40,19 +40,12 @@ async def group_message_handler(message: Message, bot: Bot, group: Group) -> Non
     if member.messages_count.get(group.key, 0) >= messages_threshold:
         return
 
-    text = message.text
-    text = text.replace(
-        'https://t.me/Yasnosvet_talks', '')
-    text = text.replace(
-        'https://t.me/Yasnosvet_thanks', '')
-    text = text.replace(
-        'https://t.me/Yasnosvet_ask', '')
-    text = text.replace(
-        'https://taplink.cc/pavelangel369', '')
 
     dictionary: Dictionary = await Dictionary.get(group.key)
 
-    # text = remove_stop_words(text, dictionary.stop_words)
+    text = message.text
+    text = get_normalized_text(text)
+    text = remove_stop_words(text, dictionary.stop_words)
 
     full_check_result = check_full_words(text, dictionary.full_words)
     if full_check_result:
@@ -61,35 +54,6 @@ async def group_message_handler(message: Message, bot: Bot, group: Group) -> Non
         return
 
     partial_search_result = check_partial_words(text, dictionary.partial_words)
-    if partial_search_result:
-        word, part = partial_search_result
-        if part:
-            await message_delete_event(
-                group, member, message, f'часть "{part}" в слове "{word}"', bot)
-        else:
-            await message_delete_event(
-                group, member, message, f'слово "{part}"', bot)
-        return
-
-    regex_search_result = check_regexps(text, dictionary.regex_patterns)
-    if regex_search_result:
-        word, pattern = regex_search_result
-        await message_delete_event(
-                group, member, message, f'шаблон "{pattern}" в слове "{word}"', bot)
-
-        return
-
-    normalized_text = get_normalized_text(text)
-
-    full_check_result = check_full_words(
-        normalized_text, dictionary.full_words)
-    if full_check_result:
-        await message_delete_event(
-            group, member, message, f'слово "{full_check_result}"', bot)
-        return
-
-    partial_search_result = check_partial_words(
-        normalized_text, dictionary.partial_words)
     if partial_search_result:
         word, part = partial_search_result
         if part:
@@ -110,7 +74,7 @@ async def group_message_handler(message: Message, bot: Bot, group: Group) -> Non
 
         return
 
-    profanity_check_result = check_profanity(message.text)
+    profanity_check_result = check_profanity(text)
     if profanity_check_result:
         await profanity_filter_event(
             group, member, message, profanity_check_result, bot)
