@@ -5,6 +5,7 @@ from typing import Optional
 from deta import Drive
 
 from analysis.normilize import get_normalized_text, get_obfuscated_words
+from utils.logging import log
 from vartrie import VarTrie
 
 
@@ -35,6 +36,18 @@ def check_partial_words(text: str, partial_words: list[str]) -> Optional[tuple[s
                 return outer.group(), word
             else:
                 return '', word
+
+    return None
+
+
+def check_regexps(text: str, patterns: list[str]) -> Optional[tuple[str, str]]:
+    for pattern in patterns:
+        result = re.search(pattern, text)
+        log({'pattern': pattern, 'text': text, 'result': repr(result)})
+        if result:
+            return result.group(), pattern
+
+    return None
 
 
 def check_profanity(text: str) -> Optional[str]:

@@ -5,7 +5,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from odetam.exceptions import ItemNotFound
 
 from analysis.checking import (check_full_words, check_partial_words,
-                               check_profanity)
+                               check_profanity, check_regexps)
 from analysis.normilize import get_normalized_text
 
 from bot.messages import PROFANITY_EVENT
@@ -69,6 +69,14 @@ async def group_message_handler(message: Message, bot: Bot, group: Group) -> Non
                 group, member, message, f'слово "{part}"', bot)
         return
 
+    regex_search_result = check_regexps(text, dictionary.regex_patterns)
+    if regex_search_result:
+        word, pattern = regex_search_result
+        await message_delete_event(
+                group, member, message, f'шаблон "{pattern}" в слове "{word}"', bot)
+
+        return
+
     normalized_text = get_normalized_text(text)
 
     full_check_result = check_full_words(
@@ -89,6 +97,14 @@ async def group_message_handler(message: Message, bot: Bot, group: Group) -> Non
 
         await message_delete_event(
             group, member, message, reason, bot)
+
+        return
+
+    regex_search_result = check_regexps(text, dictionary.regex_patterns)
+    if regex_search_result:
+        word, pattern = regex_search_result
+        await message_delete_event(
+                group, member, message, f'шаблон "{pattern}" в слове "{word}"', bot)
 
         return
 
