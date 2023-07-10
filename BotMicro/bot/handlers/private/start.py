@@ -52,11 +52,11 @@ async def start_handler(message: Message, state: FSMContext) -> None:
                 KeyboardButton(text='Отключить баны'),
                 KeyboardButton(text='Установить лимит бана'),
             ],
-            # [
-            #     KeyboardButton(text='Добавить исключение'),
-            #     KeyboardButton(text='Убрать исключение'),
-            #     KeyboardButton(text='Пользователи-исключения'),
-            # ],
+            [
+                KeyboardButton(text='Добавить исключение'),
+                KeyboardButton(text='Убрать исключение'),
+                KeyboardButton(text='Пользователи-исключения'),
+            ],
         ])
     )
     if not message.from_user:
