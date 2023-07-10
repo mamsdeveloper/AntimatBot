@@ -3,7 +3,7 @@ from aiogram.filters import ChatMemberUpdatedFilter, IS_ADMIN
 from aiogram.types import ChatMemberUpdated
 from bot.handlers.private import ignored_users
 
-from models import Group, History, Dictionary
+from models import Group, Dictionary
 
 
 router = Router()
@@ -21,8 +21,8 @@ async def new_group_handler(event: ChatMemberUpdated):
     )
     await group.save()
 
-    history = History(key=group.key, events=[])
-    await history.save()
+    # history = History(key=group.key, events=[])
+    # await history.save()
 
     dictionary: Dictionary = await Dictionary.get('default')
     dictionary.key = group.key

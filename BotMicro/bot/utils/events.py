@@ -9,7 +9,7 @@ from bot.callbacks.event_message import (BanMemberCallback,
 from bot.messages import (DELETE_MESSAGE_EVENT, DELETE_MESSAGE_REASON,
                           PROFANITY_EVENT, STRIKE_MEMBER_EVENT)
 from bot.utils.spread import SendMessage, forward_messages, spread_messages
-from models import (Chat, DeleteMessageEvent, Group, History, Member,
+from models import (Chat, DeleteMessageEvent, Group, Member,
                     StrikeMemberEvent)
 from models.events import Event, ProfanityFilterEvent
 
@@ -37,9 +37,9 @@ async def message_delete_event(
         reason=reason,
         time=datetime.now()
     )
-    history: History = await History.get(group.key)
-    history.events.append(del_msg_event)
-    await history.save()  # type: ignore
+    # history: History = await History.get(group.key)
+    # history.events.append(del_msg_event)
+    # await history.save()  # type: ignore
 
     # send info to admins
     delete_event_message = SendMessage(
@@ -107,9 +107,9 @@ async def strike_member_event(
         reason=None,
         time=datetime.now()
     )
-    history: History = await History.get(group.key)
-    history.events.append(strike_member_event)
-    await history.save()  # type: ignore
+    # history: History = await History.get(group.key)
+    # history.events.append(strike_member_event)
+    # await history.save()  # type: ignore
 
     # send event to admins
     strike_event_message = SendMessage(
@@ -152,9 +152,9 @@ async def profanity_filter_event(
         reason=word,
         time=datetime.now()
     )
-    history: History = await History.get(group.key)
-    history.events.append(profanity_filter_event)
-    await history.save()  # type: ignore
+    # history: History = await History.get(group.key)
+    # history.events.append(profanity_filter_event)
+    # await history.save()  # type: ignore
 
     # send message to admins
     profanity_event_message = SendMessage(
