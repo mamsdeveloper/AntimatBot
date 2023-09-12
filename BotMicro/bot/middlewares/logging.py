@@ -6,7 +6,13 @@ from aiogram.types import TelegramObject
 from deta import Base  # type: ignore
 
 
+EXPIRE_IN = 604800  # week
+
+
 class LoggingMiddleware(BaseMiddleware):
+    def __init__(self, expire_in: int = EXPIRE_IN) -> None:
+        self.expire_in = expire_in
+
     async def __call__(
         self,
         handler: Callable[[TelegramObject, Dict[str, Any]], Awaitable[Any]],
@@ -19,7 +25,7 @@ class LoggingMiddleware(BaseMiddleware):
         logging_base.put(
             key=str(2 * 10**9 - time.timestamp()),
             data={'time': time.isoformat(), 'update': event.json()},
-            expire_in=60 * 60 * 2  # expire in two hours
+            expire_in=self.expire_in,
         )
 
         return await handler(event, data)
