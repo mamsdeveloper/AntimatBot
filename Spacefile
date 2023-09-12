@@ -19,6 +19,9 @@ micros:
         - name: ENABLE_EVENTS_LOGS
           description: Enable logging of each telegram event. Logs are stored in the "logs" Deta Base.
           default: "True"
+        - name: LOGS_EXPIRE_IN
+          description: Time in seconds after which logs will be deleted.
+          default: "604800"
         - name: MESSAGES_THRESHOLD
           description: Number of messages to be sent after member will not be banned.
           default: "5"

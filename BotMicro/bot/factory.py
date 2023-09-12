@@ -5,11 +5,10 @@ from aiogram import Bot, Dispatcher
 from aiogram.enums.update_type import UpdateType
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
 from aiogram_deta.storage import DefaultKeyBuilder, DetaStorage
-from deta import Deta
-
 from bot.handlers import root_router as root_router
 from bot.middlewares.callback_message import CallbackMessageMiddleware
 from bot.middlewares.logging import LoggingMiddleware
+from deta import Deta
 
 
 def get_webhook_secret() -> str:
@@ -34,7 +33,8 @@ def create_bot(token: str) -> tuple[Bot, str]:
 
 def create_dispatcher(deta: Deta) -> Dispatcher:
     base = deta.AsyncBase('fsm')  # type: ignore
-    storage = DetaStorage(base, DefaultKeyBuilder(with_destiny=True))  # type: ignore
+    storage = DetaStorage(base, DefaultKeyBuilder(
+        with_destiny=True))  # type: ignore
 
     dispatcher = Dispatcher(storage=storage)
 
@@ -43,6 +43,10 @@ def create_dispatcher(deta: Deta) -> Dispatcher:
     dispatcher.callback_query.middleware(CallbackAnswerMiddleware())
 
     if getenv('ENABLE_EVENTS_LOGS') == 'True':
-        dispatcher.update.middleware(LoggingMiddleware())
+        if getenv('LOGS_EXPIRE_IN') is not None:
+            expire_in = int(getenv('LOGS_EXPIRE_IN'))
+            dispatcher.update.middleware(LoggingMiddleware(expire_in))
+        else:
+            dispatcher.update.middleware(LoggingMiddleware())
 
     return dispatcher
