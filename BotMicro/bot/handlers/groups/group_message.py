@@ -11,6 +11,7 @@ from analysis.normilize import get_normalized_text, remove_stop_words
 from bot.messages import PROFANITY_EVENT
 from bot.utils.events import message_delete_event, profanity_filter_event
 from bot.utils.spread import SendMessage, forward_messages, spread_messages
+from bot.utils.message import get_full_text
 from models import Dictionary, Group
 from models.chat import Chat
 from models.member import Member
@@ -19,12 +20,9 @@ from utils.logging import log
 router = Router()
 
 
-@router.edited_message(F.text, F.from_user.is_bot == False)
-@router.message(F.text, F.from_user.is_bot == False)
+@router.edited_message(F.from_user.is_bot == False)
+@router.message(F.from_user.is_bot == False)
 async def group_message_handler(message: Message, bot: Bot, group: Group) -> None:
-    if not message.text:
-        return {'err': 'not text message'}
-
     member = await Member.get_or_none(str(message.from_user.id))
     if not member:
         member = Member(
@@ -43,7 +41,7 @@ async def group_message_handler(message: Message, bot: Bot, group: Group) -> Non
 
     dictionary: Dictionary = await Dictionary.get(group.key)
 
-    text = message.text
+    text = get_full_text(message)
     text = get_normalized_text(text)
     text = remove_stop_words(text, dictionary.stop_words)
 
