@@ -1,6 +1,5 @@
 import pickle
 import re
-import string
 from typing import Optional
 
 from deta import Drive
@@ -79,8 +78,9 @@ def check_text(text: str, full_words: list[str], partial_words: list[str]) -> Op
 
 def check_substitution(text: str) -> Optional[str]:
     """Check Russian symbols replaced with Unicode chars."""
-    RUS_SYMS = 'а-яА-ЯёЁ' + string.punctuation + string.whitespace
-    SUBSTITUTED = rf'([{RUS_SYMS}][^{RUS_SYMS}])|([^{RUS_SYMS}][{RUS_SYMS}])'
+    RU_SYMS = '[а-яА-ЯёЁ]'
+    EN_SYMS = r'[a-zA-Z]'
+    SUBSTITUTED = rf'({RU_SYMS}{EN_SYMS})|({EN_SYMS}{RU_SYMS})'
     match = re.findall(rf'(\w*({SUBSTITUTED})\w*)', text)
     if match:
         return match[0][0]
