@@ -5,7 +5,7 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from odetam.exceptions import ItemNotFound
 
 from analysis.checking import (check_full_words, check_partial_words,
-                               check_profanity, check_regexps)
+                               check_profanity, check_regexps, check_substitution)
 from analysis.normilize import get_normalized_text, remove_stop_words
 
 from bot.messages import PROFANITY_EVENT
@@ -44,6 +44,17 @@ async def group_message_handler(message: Message, bot: Bot, group: Group) -> Non
     text = get_full_text(message)
     text = get_normalized_text(text)
     text = remove_stop_words(text, dictionary.stop_words)
+
+    substitution_result = check_substitution(text)
+    if substitution_result:
+        await message_delete_event(
+            group,
+            member,
+            message,
+            f'замена букв в слове "{substitution_result}"',
+            bot,
+        )
+        return {'result': substitution_result}
 
     full_check_result = check_full_words(text, dictionary.full_words)
     if full_check_result:

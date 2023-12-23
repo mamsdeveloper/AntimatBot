@@ -74,3 +74,15 @@ def check_text(text: str, full_words: list[str], partial_words: list[str]) -> Op
         return partial_match[0]
 
     return None
+
+
+def check_substitution(text: str) -> Optional[str]:
+    """Check Russian symbols replaced with Unicode chars."""
+    RU_SYMS = '[а-яА-ЯёЁ]'
+    EN_SYMS = r'[a-zA-Z]'
+    SUBSTITUTED = rf'({RU_SYMS}{EN_SYMS})|({EN_SYMS}{RU_SYMS})'
+    match = re.findall(rf'(\w*({SUBSTITUTED})\w*)', text)
+    if match:
+        return match[0][0]
+
+    return None
