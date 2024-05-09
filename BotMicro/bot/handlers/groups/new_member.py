@@ -35,32 +35,43 @@ async def new_member_handler(event: ChatMemberUpdated, bot: Bot):
         or re.search(r'[\u0600-\u06FF\u0530-\u058F\u4E00-\u9FFF]+', fullname)
     ):
         result = await bot.ban_chat_member(event.chat.id, event.new_chat_member.user.id)
-        log(data={
-            'chat_id': event.chat.id,
-            'user_id': event.new_chat_member.user.id,
-            'ban_chat_member_result': result
-        })
+        # log(data={
+        #     'chat_id': event.chat.id,
+        #     'user_id': event.new_chat_member.user.id,
+        #     'ban_chat_member_result': result
+        # })
 
         admins: list[Chat] = await Chat.query(Chat.groups.contains(group.key))
         for admin in admins:
-            await bot.send_message(
-                chat_id=admin.key,
-                text=messages.WEIRD_NAME_RESTRICTED.format(
-                    full_name=event.new_chat_member.user.full_name,
-                    username=event.new_chat_member.user.username,
-                    title=event.chat.title
-                ),
-                reply_markup=InlineKeyboardMarkup(
-                    inline_keyboard=[
-                        [
-                            InlineKeyboardButton(
-                                text='Разрешить никнейм и разблокировать',
-                                callback_data=AllowNicknameCallback(
-                                    chat_id=event.chat.id,
-                                    user_id=event.new_chat_member.user.id
-                                ).pack()
-                            )
-                        ]
-                    ]
-                )
-            )
+            try:
+                await send_ban_member_alert(bot, event, admin)
+            except Exception:
+                pass
+
+
+async def send_ban_member_alert(
+    bot: Bot,
+    event: ChatMemberUpdated,
+    admin: Chat,
+) -> None:
+    await bot.send_message(
+        chat_id=admin.key,
+        text=messages.WEIRD_NAME_RESTRICTED.format(
+            full_name=event.new_chat_member.user.full_name,
+            username=event.new_chat_member.user.username,
+            title=event.chat.title
+        ),
+        reply_markup=InlineKeyboardMarkup(
+            inline_keyboard=[
+                [
+                    InlineKeyboardButton(
+                        text='Разрешить никнейм и разблокировать',
+                        callback_data=AllowNicknameCallback(
+                            chat_id=event.chat.id,
+                            user_id=event.new_chat_member.user.id
+                        ).pack()
+                    )
+                ]
+            ]
+        )
+    )
