@@ -1,5 +1,6 @@
 import pickle
 import re
+import string
 from typing import Optional
 
 from deta import Drive
@@ -86,3 +87,16 @@ def check_substitution(text: str) -> Optional[str]:
         return match[0][0]
 
     return None
+
+
+def check_emoji(text: str) -> bool:
+    """Check if text is spam consists of custom emojies."""
+    if len(text) < 15:
+        # it is probable normal text
+        return False
+
+    non_emoji = re.findall(r'[\w\d{re.escape(string.punctuation)}]', text)
+    if len(non_emoji) < 3:
+        return True
+
+    return False

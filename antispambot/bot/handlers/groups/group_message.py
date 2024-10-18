@@ -4,7 +4,7 @@ from aiogram import Bot, F, Router
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 from odetam.exceptions import ItemNotFound
 
-from analysis.checking import (check_full_words, check_partial_words,
+from analysis.checking import (check_emoji, check_full_words, check_partial_words,
                                check_profanity, check_regexps, check_substitution)
 from analysis.normilize import get_normalized_text, remove_stop_words
 
@@ -55,6 +55,17 @@ async def group_message_handler(message: Message, bot: Bot, group: Group) -> Non
             bot,
         )
         return {'result': substitution_result}
+
+    emoji_result = check_emoji(text)
+    if emoji_result:
+        await message_delete_event(
+            group,
+            member,
+            message,
+            'сообщение содержит только эмодзи',
+            bot,
+        )
+        return {'result': emoji_result}
 
     full_check_result = check_full_words(text, dictionary.full_words)
     if full_check_result:
