@@ -227,3 +227,4 @@ typings/
 poetry.lock
 develop/
 /storage/*
+*.zip
