@@ -1,9 +1,14 @@
 from aiogram import Bot, Router
 from aiogram.types import CallbackQuery, Message
-from odetam.exceptions import ItemNotFound
 
-from bot.callbacks.event_message import AllowNicknameCallback, BanMemberCallback, DeleteMessageCallback, UnbanMemberCallback
-from models.member import Member
+from antispambot.bot.callbacks.event_message import (
+    AllowNicknameCallback,
+    BanMemberCallback,
+    DeleteMessageCallback,
+    UnbanMemberCallback,
+)
+from antispambot.models.member import Member
+from antispambot.storage.storages import member_storage
 
 router = Router()
 
@@ -19,14 +24,12 @@ async def unban_member_handler(query: CallbackQuery, message: Message, callback_
     await bot.unban_chat_member(callback_data.chat_id, callback_data.user_id, only_if_banned=True)
 
     group_key = str(callback_data.chat_id)
-    try:
-        member: Member = await Member.get(str(callback_data.user_id))
-    except ItemNotFound:
+    member = member_storage.get(str(callback_data.user_id))
+    if member is None:
         member = Member(key=str(callback_data.user_id), strikes_count={})
 
     member.strikes_count[group_key] = 0
-    await member.save()
-
+    member_storage.save(member)
     await message.edit_reply_markup(reply_markup=None)
 
 
@@ -34,15 +37,13 @@ async def unban_member_handler(query: CallbackQuery, message: Message, callback_
 async def allow_nickname_handler(query: CallbackQuery, message: Message, callback_data: AllowNicknameCallback, bot: Bot) -> None:
     await bot.unban_chat_member(callback_data.chat_id, callback_data.user_id, only_if_banned=True)
 
-    try:
-        member: Member = await Member.get(str(callback_data.user_id))
-    except ItemNotFound:
+    member = member_storage.get(str(callback_data.user_id))
+    if member is None:
         member = Member(key=str(callback_data.user_id), strikes_count={})
 
     member.strikes_count[str(callback_data.chat_id)] = 0
     member.nickname_pass[str(callback_data.chat_id)] = True
-    await member.save()
-
+    member_storage.save(member)
     await message.edit_reply_markup(reply_markup=None)
 
 

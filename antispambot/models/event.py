@@ -1,11 +1,11 @@
 from datetime import datetime
 from typing import Optional
 
-from pydantic import BaseModel
+from antispambot.storage.base import BaseStorageModel
 
 
-class Event(BaseModel):
-    event: str = ''
+class Event(BaseStorageModel):
+    event: str
     username: Optional[str]
     full_name: str
     time: datetime
@@ -14,12 +14,12 @@ class Event(BaseModel):
 
 
 class StrikeMemberEvent(Event):
-    event = 'ban_user'
+    event: str = 'ban_user'
 
 
 class DeleteMessageEvent(Event):
-    event = 'delete_message'
+    event: str = 'delete_message'
 
 
 class ProfanityFilterEvent(Event):
-    event = 'profanity_filter'
+    event: str = 'profanity_filter'

@@ -2,8 +2,10 @@ from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from bot import messages
-from bot.utils.chat_queries import get_chat_groups_dictionaries
+from antispambot.bot import messages
+from antispambot.bot.utils.chat_queries import get_chat_groups_dictionaries
+
+from antispambot.storage.storages import dictionary_storage
 
 router = Router()
 
@@ -12,10 +14,10 @@ router = Router()
 async def activate_profanity_filter(message: Message, state: FSMContext):
     await state.clear()
 
-    chat_dicts = await get_chat_groups_dictionaries(message.chat.id)
+    chat_dicts = get_chat_groups_dictionaries(message.chat.id)
     for dictionary in chat_dicts:
         dictionary.profanity_filter = True
-        await dictionary.save()
+        dictionary_storage.save(dictionary)
 
     await message.answer(messages.SUCCESSFUL_ACTIVATE_FILTER)
 
@@ -24,9 +26,9 @@ async def activate_profanity_filter(message: Message, state: FSMContext):
 async def deactivate_profanity_filter(message: Message, state: FSMContext):
     await state.clear()
 
-    chat_dicts = await get_chat_groups_dictionaries(message.chat.id)
+    chat_dicts = get_chat_groups_dictionaries(message.chat.id)
     for dictionary in chat_dicts:
         dictionary.profanity_filter = False
-        await dictionary.save()
+        dictionary_storage.save(dictionary)
 
     await message.answer(messages.SUCCESSFUL_DEACTIVATE_FILTER)

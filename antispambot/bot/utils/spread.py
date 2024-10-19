@@ -15,7 +15,7 @@ async def spread_messages(
     chat_ids: list[int],
     messages: list[SendMessage],
     bot: Bot
-) -> list[Union[Exception, Message]]:
+) -> list[Union[BaseException, Message]]:
     targets = [
         bot.send_message(
             chat_id,
@@ -25,7 +25,7 @@ async def spread_messages(
         for chat_id in chat_ids
         for message in messages
     ]
-    results: list[Union[Exception, Message]] = await gather(
+    results: list[Union[BaseException, Message]] = await gather(
         *targets,
         return_exceptions=True
     )
@@ -36,7 +36,7 @@ async def forward_messages(
     chat_ids: list[int],
     messages: list[Message],
     bot: Bot
-) -> list[Union[Exception, Message]]:
+) -> list[Union[BaseException, Message]]:
     targets = [
         bot.forward_message(
             chat_id,
@@ -46,7 +46,7 @@ async def forward_messages(
         for chat_id in chat_ids
         for message in messages
     ]
-    results: list[Union[Exception, Message]] = await gather(
+    results: list[Union[BaseException, Message]] = await gather(
         *targets,
         return_exceptions=True
     )

@@ -1,7 +1,7 @@
-from odetam.async_model import AsyncDetaModel
+from antispambot.storage.base import BaseStorageModel
 
 
-class Group(AsyncDetaModel):
+class Group(BaseStorageModel):
     title: str
     active: bool
     strike_mode: bool

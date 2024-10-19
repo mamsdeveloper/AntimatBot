@@ -1,12 +1,11 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.filters import CommandStart
 from aiogram.fsm.context import FSMContext
-from aiogram.types import Message, KeyboardButton, ReplyKeyboardMarkup
-from odetam.exceptions import ItemNotFound
+from aiogram.types import KeyboardButton, Message, ReplyKeyboardMarkup
 
-from bot import messages
-from models import Chat
-
+from antispambot.bot import messages
+from antispambot.models.chat import Chat
+from antispambot.storage.storages import chat_storage
 
 router = Router()
 
@@ -62,12 +61,11 @@ async def start_handler(message: Message, state: FSMContext) -> None:
     if not message.from_user:
         return
 
-    try:
-        chat: Chat = await Chat.get(str(message.chat.id))
-    except ItemNotFound:
+    chat = chat_storage.get(str(message.chat.id))
+    if chat is None:
         chat = Chat(
             key=str(message.chat.id),
             username=message.from_user.full_name,
             groups=[]
         )
-        await chat.save()
+        chat_storage.save(chat)

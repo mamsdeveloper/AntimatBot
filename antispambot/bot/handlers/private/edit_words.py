@@ -1,12 +1,11 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
 
-from bot import messages
-from bot.states.private import EditWords
-from bot.utils.chat_queries import get_chat_groups_dictionaries
-from models import Dictionary
-
+from antispambot.bot import messages
+from antispambot.bot.states.private import EditWords
+from antispambot.bot.utils.chat_queries import get_chat_groups_dictionaries
+from antispambot.storage.storages import dictionary_storage
 
 router = Router()
 
@@ -15,7 +14,7 @@ router = Router()
 async def drop_words_handler(message: Message, state: FSMContext):
     await state.clear()
 
-    chat_dicts = await get_chat_groups_dictionaries(message.chat.id)
+    chat_dicts = get_chat_groups_dictionaries(message.chat.id)
     for dictionary in chat_dicts:
         if message.text == 'Убрать все полные слова':
             dictionary.full_words = []
@@ -24,7 +23,7 @@ async def drop_words_handler(message: Message, state: FSMContext):
         elif message.text == 'Убрать все шаблоны':
             dictionary.regex_patterns = []
 
-        await dictionary.save()
+        dictionary_storage.save(dictionary)
 
     await message.answer(messages.SUCCESSFUL_DROP_WORDS)
 
@@ -33,16 +32,18 @@ async def drop_words_handler(message: Message, state: FSMContext):
 async def repair_words_handler(message: Message, state: FSMContext):
     await state.clear()
 
-    default_dict: Dictionary = await Dictionary.get('default')
+    default_dict = dictionary_storage.get('default')
+    if default_dict is None:
+        return
 
-    chat_dicts = await get_chat_groups_dictionaries(message.chat.id)
+    chat_dicts = get_chat_groups_dictionaries(message.chat.id)
     for dictionary in chat_dicts:
         if message.text == 'Восстановить словарь полных слов':
             dictionary.full_words = default_dict.full_words
         elif message.text == 'Восстановить словарь частичных слов':
             dictionary.partial_words = default_dict.partial_words
 
-        await dictionary.save()
+        dictionary_storage.save(dictionary)
 
     await message.answer(messages.SUCCESSFUL_REPAIR_WORDS)
 
@@ -76,7 +77,7 @@ async def words_handler(message: Message, state: FSMContext):
     action = data.get('command')
     await state.clear()
 
-    chat_dicts = await get_chat_groups_dictionaries(message.chat.id)
+    chat_dicts = get_chat_groups_dictionaries(message.chat.id)
     for dictionary in chat_dicts:
         if action == 'Добавить полные слова':
             dictionary.full_words.extend(words)
@@ -95,6 +96,6 @@ async def words_handler(message: Message, state: FSMContext):
         elif action == 'Убрать пропуск слов':
             dictionary.stop_words = [word for word in dictionary.stop_words if word not in words]
 
-        await dictionary.save()
+        dictionary_storage.save(dictionary)
 
     await message.answer(messages.SUCCESSFUL_UPDATE_WORDS)

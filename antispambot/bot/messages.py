@@ -1,6 +1,7 @@
 from typing import Iterable
 
-from models import Dictionary, Group
+from antispambot.models.dictionary import Dictionary
+from antispambot.models.group import Group
 
 GREETING = 'Привет! Я помогу тебе удалять сообщения со стоп-словами.'
 

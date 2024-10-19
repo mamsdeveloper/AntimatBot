@@ -1,10 +1,10 @@
-from aiogram import Router, F
-from aiogram.filters import ChatMemberUpdatedFilter, IS_ADMIN
+from aiogram import Router
+from aiogram.filters import IS_ADMIN, ChatMemberUpdatedFilter
 from aiogram.types import ChatMemberUpdated
-from bot.handlers.private import ignored_users
 
-from models import Group, Dictionary
-
+from antispambot.models.dictionary import Dictionary
+from antispambot.models.group import Group
+from antispambot.storage.storages import dictionary_storage, group_storage
 
 router = Router()
 
@@ -14,16 +14,16 @@ async def new_group_handler(event: ChatMemberUpdated):
     group = Group(
         key=str(event.chat.id),
         title=event.chat.title or '',
-        active=True ,
+        active=True,
         strike_mode=True,
         strike_limit=3,
         ignored_users=[]
     )
-    await group.save()
+    group_storage.save(group)
 
-    # history = History(key=group.key, events=[])
-    # await history.save()
+    dictionary = dictionary_storage.get('default')
+    if dictionary is None:
+        dictionary = Dictionary(key='default', full_words=[], partial_words=[])
 
-    dictionary: Dictionary = await Dictionary.get('default')
     dictionary.key = group.key
-    await dictionary.save()
+    dictionary_storage.save(dictionary)

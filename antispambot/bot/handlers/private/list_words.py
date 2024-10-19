@@ -1,12 +1,10 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from odetam.exceptions import ItemNotFound
 
-from bot import messages
-from bot.utils.chat_queries import get_chat_groups_and_dictionaries
-from models import Dictionary
-
+from antispambot.bot import messages
+from antispambot.bot.utils.chat_queries import get_chat_groups_and_dictionaries
+from antispambot.storage.storages import dictionary_storage
 
 router = Router()
 
@@ -15,12 +13,11 @@ router = Router()
 async def list_words_handler(message: Message, state: FSMContext):
     await state.clear()
 
-    try:
-        default_dict: Dictionary = await Dictionary.get('default')
-    except ItemNotFound:
+    default_dict = dictionary_storage.get('default')
+    if default_dict is None:
         return
 
-    groups_and_dicts = await get_chat_groups_and_dictionaries(message.chat.id)
+    groups_and_dicts = get_chat_groups_and_dictionaries(message.chat.id)
     for group, dictionary in groups_and_dicts:
         full_words = sorted(set(dictionary.full_words))
         partial_words = sorted(set(dictionary.partial_words))

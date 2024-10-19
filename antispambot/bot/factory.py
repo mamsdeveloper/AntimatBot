@@ -1,52 +1,26 @@
-import asyncio
-from os import getenv
-
 from aiogram import Bot, Dispatcher
-from aiogram.enums.update_type import UpdateType
+from aiogram.client.default import DefaultBotProperties
+from aiogram.enums.parse_mode import ParseMode
+from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.utils.callback_answer import CallbackAnswerMiddleware
-from aiogram_deta.storage import DefaultKeyBuilder, DetaStorage
-from bot.handlers import root_router as root_router
-from bot.middlewares.callback_message import CallbackMessageMiddleware
-from bot.middlewares.logging import LoggingMiddleware
-from deta import Deta
+
+from antispambot.bot.handlers import root_router as root_router
+from antispambot.bot.middlewares.callback_message import (
+    CallbackMessageMiddleware,
+)
+from antispambot.bot.middlewares.logging import LoggingMiddleware
 
 
-def get_webhook_secret() -> str:
-    return getenv('DETA_SPACE_APP_MICRO_NAME', '') + getenv('DETA_PROJECT_KEY', '')[:4]
+def create_bot(token: str) -> Bot:
+    bot = Bot(token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
+    return bot
 
 
-def create_bot(token: str) -> tuple[Bot, str]:
-    bot = Bot(token, parse_mode='HTML')
-
-    webhook_url = getenv('DETA_SPACE_APP_HOSTNAME', '') + '/webhook'
-    webhook_secret = get_webhook_secret()
-
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(bot.set_webhook(
-        url=webhook_url,
-        secret_token=webhook_secret,
-        allowed_updates=[item.value for item in UpdateType]
-    ))
-
-    return bot, webhook_secret
-
-
-def create_dispatcher(deta: Deta) -> Dispatcher:
-    base = deta.AsyncBase('fsm')  # type: ignore
-    storage = DetaStorage(base, DefaultKeyBuilder(
-        with_destiny=True))  # type: ignore
-
+def create_dispatcher() -> Dispatcher:
+    storage = MemoryStorage()
     dispatcher = Dispatcher(storage=storage)
-
     dispatcher.include_router(root_router)
     dispatcher.callback_query.middleware(CallbackMessageMiddleware())
     dispatcher.callback_query.middleware(CallbackAnswerMiddleware())
-
-    # if getenv('ENABLE_EVENTS_LOGS') == 'True':
-    #     if getenv('LOGS_EXPIRE_IN') is not None:
-    #         expire_in = int(getenv('LOGS_EXPIRE_IN'))
-    #         dispatcher.update.middleware(LoggingMiddleware(expire_in))
-    #     else:
-    #         dispatcher.update.middleware(LoggingMiddleware())
-
+    dispatcher.update.middleware(LoggingMiddleware())
     return dispatcher

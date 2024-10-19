@@ -1,29 +1,43 @@
+import logging
 import re
 
 from aiogram import Bot, Router
-from aiogram.filters.chat_member_updated import (IS_MEMBER, IS_NOT_MEMBER,
-                                                 ChatMemberUpdatedFilter)
-from aiogram.types import (ChatMemberUpdated, InlineKeyboardButton,
-                           InlineKeyboardMarkup)
+from aiogram.filters.chat_member_updated import (
+    IS_MEMBER,
+    IS_NOT_MEMBER,
+    ChatMemberUpdatedFilter,
+)
+from aiogram.types import (
+    ChatMemberUpdated,
+    InlineKeyboardButton,
+    InlineKeyboardMarkup,
+)
 
-from bot import messages
-from bot.callbacks.event_message import AllowNicknameCallback
-from models.chat import Chat
-from models.group import Group
-from models.member import Member
-from utils.logging import log
+from antispambot.bot import messages
+from antispambot.bot.callbacks.event_message import AllowNicknameCallback
+from antispambot.models.chat import Chat
+from antispambot.storage.storages import (
+    chat_storage,
+    group_storage,
+    member_storage,
+)
+
+logger = logging.getLogger(__name__)
 
 router = Router()
 
 
 @router.chat_member(ChatMemberUpdatedFilter(IS_NOT_MEMBER >> IS_MEMBER))
 async def new_member_handler(event: ChatMemberUpdated, bot: Bot):
-    member = await Member.get_or_none(str(event.new_chat_member.user.id))
-    if member and member.nickname_pass.get(str(event.chat.id)):
-        return
+    member = member_storage.get(str(event.new_chat_member.user.id))
+    if member is not None:
+        if member.nickname_pass.get(str(event.chat.id)) is not None:
+            logger.info(f'User {event.new_chat_member.user.id} has nickname pass')
+            return
 
-    group = await Group.get_or_none(str(event.chat.id))
-    if not group:
+    group = group_storage.get(str(event.chat.id))
+    if group is None:
+        logger.warning(f'Group {event.chat.id} not found in storage')
         return
 
     fullname = event.new_chat_member.user.full_name
@@ -34,14 +48,12 @@ async def new_member_handler(event: ChatMemberUpdated, bot: Bot):
         or len(re.sub(r'[^a-zа-я]', '', fullname)) <= 2
         or re.search(r'[\u0600-\u06FF\u0530-\u058F\u4E00-\u9FFF]+', fullname)
     ):
-        result = await bot.ban_chat_member(event.chat.id, event.new_chat_member.user.id)
-        # log(data={
-        #     'chat_id': event.chat.id,
-        #     'user_id': event.new_chat_member.user.id,
-        #     'ban_chat_member_result': result
-        # })
-
-        admins: list[Chat] = await Chat.query(Chat.groups.contains(group.key))
+        await bot.ban_chat_member(event.chat.id, event.new_chat_member.user.id)
+        admins = [
+            chat
+            for chat in chat_storage.get_all()
+            if group.key in chat.groups
+        ]
         for admin in admins:
             try:
                 await send_ban_member_alert(bot, event, admin)

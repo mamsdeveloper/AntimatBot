@@ -1,6 +1,6 @@
-from odetam.async_model import AsyncDetaModel
+from antispambot.storage.base import BaseStorageModel
 
 
-class Chat(AsyncDetaModel):
-    username: str 
+class Chat(BaseStorageModel):
+    username: str
     groups: list[str]

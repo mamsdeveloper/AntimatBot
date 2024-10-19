@@ -1,10 +1,9 @@
 from aiogram import Bot
 from aiogram.exceptions import TelegramAPIError
-from aiogram.types import User, Chat
+from aiogram.types import Chat, User
 
 
-async def is_user_admin(user: User, chat: Chat) -> bool:
-    bot = Bot.get_current()
+async def is_user_admin(user: User, chat: Chat, bot: Bot) -> bool:
     if not bot:
         return False
 

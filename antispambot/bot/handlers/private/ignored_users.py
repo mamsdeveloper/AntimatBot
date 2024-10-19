@@ -1,10 +1,11 @@
-from aiogram import Router, F
+from aiogram import F, Router
 from aiogram.fsm.context import FSMContext
 from aiogram.types import Message
-from bot.states.private import IgnoredUserState
 
-from bot.utils.chat_queries import get_chat_groups
-from bot import messages
+from antispambot.bot import messages
+from antispambot.bot.states.private import IgnoredUserState
+from antispambot.bot.utils.chat_queries import get_chat_groups
+from antispambot.storage.storages import group_storage
 
 router = Router()
 
@@ -20,29 +21,28 @@ async def update_ignored_users_handler(message: Message, state: FSMContext):
 async def full_name_handler(message: Message, state: FSMContext):
     if not message.text:
         return
-    
+
     data = await state.get_data()
     command = data['command']
     await state.clear()
 
-    groups = await get_chat_groups(message.chat.id)
+    groups = get_chat_groups(message.chat.id)
     for group in groups:
         if command == 'Добавить исключение':
             group.ignored_users.append(message.text)
         elif command == 'Убрать исключение':
             if message.text in group.ignored_users:
                 group.ignored_users.remove(message.text)
-        
-        await group.save()
-    
+
+        group_storage.save(group)
+
     await message.answer(messages.IGNORED_USERS_UPDATED)
 
 
 @router.message(F.text == 'Пользователи-исключения')
 async def list_ignored_users_handler(message: Message, state: FSMContext):
     await state.clear()
-    
-    groups = await get_chat_groups(message.chat.id)
+
+    groups = get_chat_groups(message.chat.id)
     for group in groups:
         await message.answer(messages.build_ignored_users_list(group))
-        

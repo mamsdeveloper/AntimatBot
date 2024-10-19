@@ -1,12 +1,7 @@
-import pickle
 import re
-import string
 from typing import Optional
 
-from deta import Drive
-
-from analysis.normilize import get_normalized_text, get_obfuscated_words
-from vartrie import VarTrie
+from antispambot.analysis.normilize import get_normalized_text
 
 
 def check_regex_inject(text: str) -> bool:
@@ -45,20 +40,6 @@ def check_regexps(text: str, patterns: list[str]) -> Optional[tuple[str, str]]:
         result = re.search(pattern, text)
         if result:
             return result.group(), pattern
-
-    return None
-
-
-def check_profanity(text: str) -> Optional[str]:
-    drive = Drive('profanity')
-    profanity_trie_pkl = drive.get('trie.pkl')
-    profanity_trie: VarTrie = pickle.loads(profanity_trie_pkl.read())
-
-    text = get_normalized_text(text)
-    words = get_obfuscated_words(text)
-    for word in words:
-        if profanity_trie.search(word):
-            return word
 
     return None
 

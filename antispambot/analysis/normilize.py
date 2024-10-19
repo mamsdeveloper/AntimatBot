@@ -1,6 +1,5 @@
 import re
 
-
 analyzer = None
 
 

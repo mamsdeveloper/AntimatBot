@@ -1,17 +1,37 @@
 from datetime import datetime
+import logging
 
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
-from bot.callbacks.event_message import (BanMemberCallback,
-                                         DeleteMessageCallback,
-                                         UnbanMemberCallback)
-from bot.messages import (DELETE_MESSAGE_EVENT, DELETE_MESSAGE_REASON,
-                          PROFANITY_EVENT, STRIKE_MEMBER_EVENT)
-from bot.utils.spread import SendMessage, forward_messages, spread_messages
-from models import (Chat, DeleteMessageEvent, Group, Member,
-                    StrikeMemberEvent)
-from models.events import Event, ProfanityFilterEvent
+from antispambot.bot.callbacks.event_message import (
+    BanMemberCallback,
+    DeleteMessageCallback,
+    UnbanMemberCallback,
+)
+from antispambot.bot.messages import (
+    DELETE_MESSAGE_EVENT,
+    DELETE_MESSAGE_REASON,
+    PROFANITY_EVENT,
+    STRIKE_MEMBER_EVENT,
+)
+from antispambot.bot.utils.spread import (
+    SendMessage,
+    forward_messages,
+    spread_messages,
+)
+from antispambot.models.event import (
+    DeleteMessageEvent,
+    Event,
+    ProfanityFilterEvent,
+    StrikeMemberEvent,
+)
+from antispambot.models.group import Group
+from antispambot.models.member import Member
+from antispambot.storage.storages import chat_storage, member_storage
+
+
+logger = logging.getLogger(__name__)
 
 
 async def message_delete_event(
@@ -21,6 +41,9 @@ async def message_delete_event(
     reason: str,
     bot: Bot
 ) -> Event:
+    assert message.from_user
+    logger.info(f'Deleting message {message.message_id} from {message.from_user.username} in group {group.key}: {reason}')
+
     await message.delete()
 
     # send info to Recent Actions
@@ -31,15 +54,13 @@ async def message_delete_event(
 
     # register event
     del_msg_event = DeleteMessageEvent(
+        key=str(message.message_id),
         username=message.from_user.username,
         full_name=message.from_user.full_name,
         message_text=message.text or 'error',
         reason=reason,
         time=datetime.now()
     )
-    # history: History = await History.get(group.key)
-    # history.events.append(del_msg_event)
-    # await history.save()  # type: ignore
 
     # send info to admins
     delete_event_message = SendMessage(
@@ -71,7 +92,21 @@ async def message_delete_event(
             ]
         ])
     )
-    admins_chats: list[Chat] = await Chat.query(Chat.groups.contains(group.key))
+    # admins_chats = [
+    #     chat
+    #     for chat in chat_storage.get_all()
+    #     if group.key in chat.groups
+    # ]
+    admins_chats = []
+    logger.info(group.key)
+    for chat in chat_storage.get_all():
+        if chat.groups:
+            logger.info(f'{chat.key}: {chat.groups}')
+
+        if group.key in chat.groups:
+            admins_chats.append(chat)
+
+    logger.info(f'Admins chats: {admins_chats}')
     admins_chats_ids = [int(chat.key) for chat in admins_chats]
     await spread_messages(admins_chats_ids, [delete_event_message], bot)
 
@@ -80,6 +115,7 @@ async def message_delete_event(
     if member_striked:
         await strike_member_event(group, member, message, bot)
 
+    logger.info(f'Success: {del_msg_event}')
     return del_msg_event
 
 
@@ -89,6 +125,9 @@ async def strike_member_event(
     message: Message,
     bot: Bot
 ) -> Event:
+    assert message.from_user
+    logger.info(f'Striking member {message.from_user.username} in group {group.key}')
+
     # send info to Recent Actions
     await send_to_recent_actions(
         message,
@@ -101,15 +140,13 @@ async def strike_member_event(
 
     # register event
     strike_member_event = StrikeMemberEvent(
+        key=str(message.message_id),
         username=message.from_user.username,
         full_name=message.from_user.full_name,
         message_text=None,
         reason=None,
         time=datetime.now()
     )
-    # history: History = await History.get(group.key)
-    # history.events.append(strike_member_event)
-    # await history.save()  # type: ignore
 
     # send event to admins
     strike_event_message = SendMessage(
@@ -123,17 +160,22 @@ async def strike_member_event(
                 InlineKeyboardButton(
                     text='Разбанить',
                     callback_data=UnbanMemberCallback(
-                        chat_id=group.key,
+                        chat_id=int(group.key),
                         user_id=message.from_user.id
                     ).pack()
                 )
             ]
         ])
     )
-    admins_chats: list[Chat] = await Chat.query(Chat.groups.contains(group.key))
+    admins_chats = [
+        chat
+        for chat in chat_storage.get_all()
+        if group.key in chat.groups
+    ]
     admins_chats_ids = [int(chat.key) for chat in admins_chats]
     await spread_messages(admins_chats_ids, [strike_event_message], bot)
 
+    logger.info(f'Success: {strike_member_event}')
     return strike_member_event
 
 
@@ -144,17 +186,18 @@ async def profanity_filter_event(
     word: str,
     bot: Bot
 ) -> Event:
+    assert message.from_user
+    logger.info(f'Profanity filter event in group {group.key}: {word}')
+
     # register event
     profanity_filter_event = ProfanityFilterEvent(
+        key=str(message.message_id),
         username=message.from_user.username,
         full_name=message.from_user.full_name,
         message_text=message.text or 'error',
         reason=word,
         time=datetime.now()
     )
-    # history: History = await History.get(group.key)
-    # history.events.append(profanity_filter_event)
-    # await history.save()  # type: ignore
 
     # send message to admins
     profanity_event_message = SendMessage(
@@ -182,18 +225,23 @@ async def profanity_filter_event(
         ])
     )
 
-    admins_chats: list[Chat] = await Chat.query(Chat.groups.contains(group.key))
+    admins_chats = [
+        chat
+        for chat in chat_storage.get_all()
+        if group.key in chat.groups
+    ]
     admins_chats_ids = [int(chat.key) for chat in admins_chats]
     await spread_messages(admins_chats_ids, [profanity_event_message], bot)
     await forward_messages(admins_chats_ids, [message], bot)
 
+    logger.info(f'Success: {profanity_filter_event}')
     return profanity_filter_event
 
 
 async def update_member_strike(group: Group, member: Member) -> bool:
     member.strikes_count.setdefault(group.key, 0)
     member.strikes_count[group.key] += 1
-    await member.save()
+    member_storage.save(member)
 
     if member.strikes_count[group.key] >= 3:
         return group.strike_mode
