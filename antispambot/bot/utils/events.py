@@ -6,24 +6,17 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from antispambot.bot.callbacks.event_message import (
     BanMemberCallback,
-    DeleteMessageCallback,
     UnbanMemberCallback,
 )
 from antispambot.bot.messages import (
     DELETE_MESSAGE_EVENT,
     DELETE_MESSAGE_REASON,
-    PROFANITY_EVENT,
     STRIKE_MEMBER_EVENT,
 )
-from antispambot.bot.utils.spread import (
-    SendMessage,
-    forward_messages,
-    spread_messages,
-)
+from antispambot.bot.utils.spread import SendMessage, spread_messages
 from antispambot.models.event import (
     DeleteMessageEvent,
     Event,
-    ProfanityFilterEvent,
     StrikeMemberEvent,
 )
 from antispambot.models.group import Group
@@ -91,21 +84,12 @@ async def message_delete_event(
             ]
         ])
     )
-    # admins_chats = [
-    #     chat
-    #     for chat in chat_storage.get_all()
-    #     if group.key in chat.groups
-    # ]
-    admins_chats = []
-    logger.info(group.key)
-    for chat in chat_storage.get_all():
-        if chat.groups:
-            logger.info(f'{chat.key}: {chat.groups}')
-
-        if group.key in chat.groups:
-            admins_chats.append(chat)
-
-    logger.info(f'Admins chats: {admins_chats}')
+    admins_chats = [
+        chat
+        for chat in chat_storage.get_all()
+        if group.key in chat.groups
+    ]
+    logger.info(f'Admins chats: {[chat.username for chat in admins_chats]}')
     admins_chats_ids = [int(chat.key) for chat in admins_chats]
     await spread_messages(admins_chats_ids, [delete_event_message], bot)
 
@@ -171,70 +155,12 @@ async def strike_member_event(
         for chat in chat_storage.get_all()
         if group.key in chat.groups
     ]
+    logger.info(f'Admins chats: {[chat.username for chat in admins_chats]}')
     admins_chats_ids = [int(chat.key) for chat in admins_chats]
     await spread_messages(admins_chats_ids, [strike_event_message], bot)
 
     logger.info(f'Success: {strike_member_event}')
     return strike_member_event
-
-
-async def profanity_filter_event(
-    group: Group,
-    member: Member,
-    message: Message,
-    word: str,
-    bot: Bot
-) -> Event:
-    assert message.from_user
-    logger.info(f'Profanity filter event in group {group.key}: {word}')
-
-    # register event
-    profanity_filter_event = ProfanityFilterEvent(
-        key=str(message.message_id),
-        username=message.from_user.username,
-        full_name=message.from_user.full_name,
-        message_text=message.text or 'error',
-        reason=word,
-        time=datetime.now()
-    )
-
-    # send message to admins
-    profanity_event_message = SendMessage(
-        text=PROFANITY_EVENT.format(
-            title=group.title,
-            word=profanity_filter_event.reason,
-        ),
-        reply_markup=InlineKeyboardMarkup(inline_keyboard=[
-            [
-                InlineKeyboardButton(
-                    text='Удалить сообщение',
-                    callback_data=DeleteMessageCallback(
-                        chat_id=message.chat.id,
-                        message_id=message.message_id
-                    ).pack()
-                ),
-                InlineKeyboardButton(
-                    text='Забанить',
-                    callback_data=BanMemberCallback(
-                        chat_id=message.chat.id,
-                        user_id=message.from_user.id
-                    ).pack()
-                )
-            ]
-        ])
-    )
-
-    admins_chats = [
-        chat
-        for chat in chat_storage.get_all()
-        if group.key in chat.groups
-    ]
-    admins_chats_ids = [int(chat.key) for chat in admins_chats]
-    await spread_messages(admins_chats_ids, [profanity_event_message], bot)
-    await forward_messages(admins_chats_ids, [message], bot)
-
-    logger.info(f'Success: {profanity_filter_event}')
-    return profanity_filter_event
 
 
 async def update_member_strike(group: Group, member: Member) -> bool:

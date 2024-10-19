@@ -1,6 +1,5 @@
 import asyncio
 import logging
-from os import getenv
 import sys
 
 from antispambot.bot.factory import create_bot, create_dispatcher
@@ -14,11 +13,24 @@ async def main(bot_token: str) -> None:
 
 
 if __name__ == '__main__':
-    if '--debug-log' in sys.argv:
-        logging.basicConfig(level=logging.DEBUG)
-    else:
-        logging.basicConfig(level=logging.INFO)
+    if len(sys.argv) < 2:
+        print('Usage: python main.py <BOT_TOKEN> [--debug-log]')
+        exit(1)
 
-    BOT_TOKEN = getenv('BOT_TOKEN')
-    assert BOT_TOKEN
+    BOT_TOKEN = sys.argv[1]
+
+    if '--debug-log' in sys.argv:
+        logging.basicConfig(
+            filename='logs.log',
+            level=logging.DEBUG,
+            format='%(asctime)s - %(levelname)s - %(message)s',
+        )
+    else:
+        logging.basicConfig(
+            level=logging.INFO,
+            filename='logs.log',
+            format='%(asctime)s - %(levelname)s - %(message)s',
+        )
+        logging.getLogger('aiogram').setLevel(logging.WARNING)
+
     asyncio.run(main(BOT_TOKEN))
