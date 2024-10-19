@@ -1,4 +1,5 @@
 import logging
+
 from antispambot.models.dictionary import Dictionary
 from antispambot.models.group import Group
 from antispambot.storage.storages import (
@@ -6,7 +7,6 @@ from antispambot.storage.storages import (
     dictionary_storage,
     group_storage,
 )
-
 
 logger = logging.getLogger(__name__)
 

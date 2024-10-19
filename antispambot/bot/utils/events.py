@@ -1,5 +1,5 @@
-from datetime import datetime
 import logging
+from datetime import datetime
 
 from aiogram import Bot
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message
@@ -29,7 +29,6 @@ from antispambot.models.event import (
 from antispambot.models.group import Group
 from antispambot.models.member import Member
 from antispambot.storage.storages import chat_storage, member_storage
-
 
 logger = logging.getLogger(__name__)
 

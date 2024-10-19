@@ -4,7 +4,6 @@ from aiogram.types import Message
 
 from antispambot.bot import messages
 from antispambot.bot.utils.chat_queries import get_chat_groups_dictionaries
-
 from antispambot.storage.storages import dictionary_storage
 
 router = Router()
